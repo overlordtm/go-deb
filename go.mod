@@ -1,4 +1,4 @@
-module github.com/isbm/go-deb
+module github.com/overlordtm/go-deb
 
 go 1.13
 

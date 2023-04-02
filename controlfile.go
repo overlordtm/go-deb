@@ -2,7 +2,6 @@ package deb
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -109,7 +108,8 @@ func (cf *ControlFile) setFoldedField(name string, data string) {
 		ptr = &cf.replaces
 	default:
 		ptr = nil
-		fmt.Println("@@ missing folded data for:", name)
+		logger.Println("@@ missing folded data for:", name)
+
 	}
 
 	// Try to make sense of that messy pile of many ways they call "standard"
@@ -172,9 +172,9 @@ func (cf *ControlFile) setStringField(name string, data string) {
 	case "oe":
 		cf.oe = data
 	default:
-		fmt.Println("Field", name, "is not yet supported:")
-		fmt.Println(data)
-		fmt.Println("---")
+		logger.Println("Field", name, "is not yet supported:")
+		logger.Println(data)
+		logger.Println("---")
 	}
 }
 
@@ -183,47 +183,38 @@ func (cf *ControlFile) Source() string {
 	return cf.src
 }
 
-//
 func (cf *ControlFile) Package() string {
 	return cf.pkg
 }
 
-//
 func (cf *ControlFile) Version() string {
 	return cf.version
 }
 
-//
 func (cf *ControlFile) Architecture() string {
 	return cf.arch
 }
 
-//
 func (cf *ControlFile) Maintainer() string {
 	return cf.maintainer
 }
 
-//
 func (cf *ControlFile) InstalledSize() int {
 	return cf.installedSize
 }
 
-//
 func (cf *ControlFile) Section() string {
 	return cf.section
 }
 
-//
 func (cf *ControlFile) Priority() string {
 	return cf.priority
 }
 
-//
 func (cf *ControlFile) MultiArch() string {
 	return cf.multiArch
 }
 
-//
 func (cf *ControlFile) Description() string {
 	return cf.description
 }
@@ -233,7 +224,6 @@ func (cf *ControlFile) Licence() string {
 	return cf.licence
 }
 
-//
 func (cf *ControlFile) OE() string {
 	return cf.oe
 }
@@ -243,52 +233,42 @@ func (cf *ControlFile) Summary() string {
 	return cf.summary
 }
 
-//
 func (cf *ControlFile) OriginalMaintainer() string {
 	return cf.originalMaintainer
 }
 
-//
 func (cf *ControlFile) Depends() []string {
 	return cf.depends
 }
 
-//
 func (cf *ControlFile) Suggests() []string {
 	return cf.suggests
 }
 
-//
 func (cf *ControlFile) Provides() []string {
 	return cf.provides
 }
 
-//
 func (cf *ControlFile) Recommends() []string {
 	return cf.recommends
 }
 
-//
 func (cf *ControlFile) Replaces() []string {
 	return cf.replaces
 }
 
-//
 func (cf *ControlFile) Breaks() []string {
 	return cf.breaks
 }
 
-//
 func (cf *ControlFile) Conflicts() []string {
 	return cf.conflicts
 }
 
-//
 func (cf *ControlFile) Enhances() []string {
 	return cf.enhances
 }
 
-//
 func (cf *ControlFile) Predepends() []string {
 	return cf.predepends
 }
