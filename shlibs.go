@@ -2,6 +2,7 @@ package deb
 
 import (
 	"bufio"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -64,7 +65,10 @@ func (shlf *SharedLibsFile) parse(data []byte) error {
 				line = fe[1]
 			}
 
-			fe = strings.SplitN(line, " ", 3)
+			fe = strings.Fields(line)
+			if len(fe) != 3 {
+				return fmt.Errorf("invalid shared library line: %s", line)
+			}
 			shl.library, shl.version = fe[0], fe[1]
 			fe = regexp.MustCompile(`[\\,\\|]`).Split(fe[2], -1)
 			for _, v := range fe {
