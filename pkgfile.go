@@ -148,28 +148,31 @@ func (pfr PackageFileReader) checkErr(err error) bool {
 
 // Decompress Tar data from gz or xz
 func (pfr *PackageFileReader) decompressTar(header ar.Header) *tar.Reader {
-	var gzbuf bytes.Buffer
-	var trbuf bytes.Buffer
+	gzbuf := &bytes.Buffer{}
+	trbuf := &bytes.Buffer{}
 
-	_, cperr := io.Copy(&gzbuf, pfr.arcnt)
+	_, cperr := io.Copy(gzbuf, pfr.arcnt)
 	pfr.checkErr(cperr)
 
 	if strings.HasSuffix(header.Name, ".gz") {
-		pfr.checkErr(pfr.pkg.unGzip(&trbuf, gzbuf.Bytes()))
+		pfr.checkErr(pfr.pkg.unGzip(trbuf, gzbuf.Bytes()))
 	} else if strings.HasSuffix(header.Name, ".xz") {
-		pfr.checkErr(pfr.pkg.unXz(&trbuf, gzbuf.Bytes()))
+		pfr.checkErr(pfr.pkg.unXz(trbuf, gzbuf.Bytes()))
 	} else if strings.HasSuffix(header.Name, ".bz2") {
-		pfr.checkErr(pfr.pkg.unBzip(&trbuf, gzbuf.Bytes()))
+		pfr.checkErr(pfr.pkg.unBzip(trbuf, gzbuf.Bytes()))
 	} else if strings.HasSuffix(header.Name, ".lzma") {
-		pfr.checkErr(pfr.pkg.unLzma(&trbuf, gzbuf.Bytes()))
+		pfr.checkErr(pfr.pkg.unLzma(trbuf, gzbuf.Bytes()))
 	}
 
-	return tar.NewReader(&trbuf)
+	gzbuf.Reset()
+
+	return tar.NewReader(trbuf)
 }
 
 // Read _gpgbuiler file (self-signed Debian package with no role)
 func (pfr *PackageFileReader) processGpgBuilderFile(header ar.Header) {
 	var buff bytes.Buffer
+	defer buff.Reset()
 	_, err := io.Copy(&buff, pfr.arcnt)
 	pfr.checkErr(err)
 	pfr.pkg.gpgbuilder = strings.TrimSpace(buff.String())
@@ -184,6 +187,7 @@ func (pfr *PackageFileReader) processDataFile(header ar.Header) {
 	var databuf bytes.Buffer
 	tarFile := pfr.decompressTar(header)
 	for {
+		databuf.Reset()
 		hdr, err := tarFile.Next()
 		if err == io.EOF {
 			break
@@ -193,7 +197,7 @@ func (pfr *PackageFileReader) processDataFile(header ar.Header) {
 
 		// Calculate checksum of a content payload file
 		if hdr.Typeflag == tar.TypeReg {
-			databuf.Reset()
+
 			_, err = io.Copy(&databuf, tarFile)
 			pfr.checkErr(err)
 			pfr.pkg.SetCalculatedChecksum(hdr.Name, NewBytesChecksum(databuf.Bytes()).SetHash(pfr.hash).Sum())
@@ -204,6 +208,7 @@ func (pfr *PackageFileReader) processDataFile(header ar.Header) {
 // Read versision of the package managaer
 func (pfr *PackageFileReader) processDebianBinaryFile(header ar.Header) {
 	var buff bytes.Buffer
+	defer buff.Reset()
 	_, err := io.Copy(&buff, pfr.arcnt)
 	pfr.checkErr(err)
 	pfr.pkg.debVersion = strings.TrimSpace(buff.String())
@@ -214,12 +219,12 @@ func (pfr *PackageFileReader) processControlFile(header ar.Header) {
 	var databuf bytes.Buffer
 	tarFile := pfr.decompressTar(header)
 	for {
+		databuf.Reset()
 		hdr, err := tarFile.Next()
 		if err == io.EOF {
 			break
 		}
 		if pfr.checkErr(err) && hdr.Typeflag == tar.TypeReg {
-			databuf.Reset()
 			_, err = io.Copy(&databuf, tarFile)
 			pfr.checkErr(err)
 
@@ -253,7 +258,6 @@ func (pfr *PackageFileReader) processControlFile(header ar.Header) {
 			}
 		}
 	}
-
 }
 
 // Read Debian package data from the stream
